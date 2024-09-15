@@ -1,217 +1,172 @@
 
 # Cloud-Based File Storage System with Nextcloud on Kubernetes
 
-This repository contains the configuration files and instructions for deploying a cloud-based file storage system using **Nextcloud** on **Kubernetes**, integrated with **PostgreSQL** as the database backend, **Redis** for caching, and **MetalLB** for load balancing. Below, you'll find a detailed guide on how to set up and run this system on your own Kubernetes cluster.
+This repository contains the configuration files and instructions for deploying a cloud-based file storage system using **Nextcloud** on **Kubernetes**, integrated with **PostgreSQL** as the database backend, **Redis** for caching, and **MetalLB** for load balancing.
 
 ## Table of Contents
 
 - [Introduction](#introduction)
 - [Setup Requirements](#setup-requirements)
-- [Configuration Files](#configuration-files)
-  - [values.yaml](#valuesyaml)
-  - [secrets.yaml](#secretsyaml)
-  - [metallb.yaml](#metallbyaml)
-  - [ingress.yaml](#ingressyaml)
-- [Step-by-Step Guide](#step-by-step-guide)
-  - [1. Setting Up the Namespace](#1-setting-up-the-namespace)
-  - [2. Installing MetalLB](#2-installing-metallb)
-  - [3. Deploying Nextcloud](#3-deploying-nextcloud)
-  - [4. Configuring Ingress](#4-configuring-ingress)
+- [Preliminary Setup](#preliminary-setup)
+- [Cluster Setup](#cluster-setup)
+- [Nextcloud Deployment](#nextcloud-deployment)
+- [Ingress Configuration](#ingress-configuration)
 - [Monitoring and Troubleshooting](#monitoring-and-troubleshooting)
 
 ## Introduction
 
-This project demonstrates how to deploy **Nextcloud**, an open-source file storage system, on Kubernetes. We use **PostgreSQL** for persistent data storage, **Redis** for caching and session handling, and **MetalLB** for IP management and load balancing in environments that lack cloud-based load balancers.
+In this project, we will walk through the process of setting up **Nextcloud** on a Kubernetes cluster, along with **PostgreSQL**, **Redis**, and **MetalLB**. **Nextcloud** provides cloud-based file storage capabilities, and this deployment is designed for a self-hosted environment using local infrastructure.
 
 ## Setup Requirements
 
-- A running Kubernetes cluster (single-node K3s is recommended for local setups)
-- Helm installed for managing Kubernetes packages
-- MetalLB installed for load balancing
+Before starting the setup, ensure you have the following:
 
-## Configuration Files
+- **UTM** installed with **Ubuntu** running as the virtual machine.
+- **K3s** installed for lightweight Kubernetes setup.
+- SSH tunnel for communication between your host machine and the Ubuntu VM.
+- **Helm** for package management in Kubernetes.
+- **kubectl** installed to interact with the cluster.
 
-### `values.yaml`
+## Preliminary Setup
 
-This file contains configuration parameters for **Nextcloud**, **PostgreSQL**, and **Redis**. It includes liveness and readiness probes, persistent volume settings, and connections to external secrets.
+### 1. Setting up UTM with Ubuntu
 
-\`\`\`yaml
-nextcloud:
-  host: nextcloud.local
-  username: admin
-  password: not_the_real_password
-  dbType: pgsql
-  persistence:
-    enabled: true
-    existingClaim: nextcloud-pvc
-  livenessProbe:
-    httpGet:
-      path: /status.php
-      port: 80
-    initialDelaySeconds: 30
-    timeoutSeconds: 5
-    failureThreshold: 6
-  readinessProbe:
-    httpGet:
-      path: /status.php
-      port: 80
-    initialDelaySeconds: 30
-    timeoutSeconds: 5
-    failureThreshold: 6
+To create a Kubernetes cluster, we are using **UTM** with an **Ubuntu** virtual machine. Follow the steps below to set up:
 
-postgresql:
-  enabled: true
-  postgresqlUsername: nextcloud
-  postgresqlPassword: not_the_real_password
-  postgresqlDatabase: nextcloud
-  livenessProbe:
-    tcpSocket:
-      port: 5432
-    initialDelaySeconds: 30
-    timeoutSeconds: 5
-    failureThreshold: 6
-  readinessProbe:
-    tcpSocket:
-      port: 5432
-\`\`\`
+1. Download and install **UTM** from the official website.
+2. Create a new virtual machine and install **Ubuntu**.
+3. Ensure your VM has enough resources (e.g., at least 2 GB of RAM, 2 CPUs) for Kubernetes to function smoothly.
 
-### `secrets.yaml`
+### 2. Creating an SSH Tunnel
 
-This file stores sensitive credentials like database passwords and the Nextcloud admin password. The values are Base64 encoded for security.
+Once your Ubuntu VM is up and running, you will want to create an SSH tunnel to interact with it from your host machine. This allows for easier control and management of the cluster.
 
-\`\`\`yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: nextcloud-secrets
-  namespace: nextcloud
-type: Opaque
-data:
-  nextcloud-password: <base64-encoded-password>
-  postgresql-password: <base64-encoded-password>
-\`\`\`
+1. Find the IP address of your Ubuntu VM using:
 
-### `metallb.yaml`
+   ```bash
+   ifconfig
+   ```
 
-This file configures **MetalLB** for IP management and Layer 2 advertisement. MetalLB assigns an external IP to the Nextcloud service, making it accessible from outside the cluster.
+2. From your host machine (e.g., Mac), open a terminal and create an SSH connection:
 
-\`\`\`yaml
-apiVersion: metallb.io/v1beta1
-kind: IPAddressPool
-metadata:
-  name: nextcloud-pool
-  namespace: metallb-system
-spec:
-  addresses:
-  - 192.168.64.240-192.168.64.250
+   ```bash
+   ssh <username>@<VM-IP>
+   ```
 
----
-apiVersion: metallb.io/v1beta1
-kind: L2Advertisement
-metadata:
-  name: nextcloud-l2-advertisement
-  namespace: metallb-system
-spec:
-  ipAddressPools:
-  - nextcloud-pool
-\`\`\`
+   Replace `<username>` with your Ubuntu username and `<VM-IP>` with the IP address of the VM.
 
-### `ingress.yaml`
+## Cluster Setup
 
-This file configures the **Ingress** resource to expose the Nextcloud service via a domain name (`nextcloud.local`). You can update the host field if you want to use a different domain.
+### 1. Install K3s
 
-\`\`\`yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: nextcloud-ingress
-  namespace: nextcloud
-spec:
-  rules:
-    - host: nextcloud.local
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: nextcloud
-                port:
-                  number: 8080
-\`\`\`
+To set up Kubernetes, we use **K3s**, a lightweight Kubernetes distribution. Here's how to install and run K3s:
 
-## Step-by-Step Guide
+1. SSH into your Ubuntu VM and run the following command to install K3s:
 
-### 1. Setting Up the Namespace
+   ```bash
+   curl -sfL https://get.k3s.io | sh -
+   ```
 
-Create a dedicated namespace for **Nextcloud** to keep resources organized:
+2. After installation, ensure the `kubectl` configuration is correctly set by exporting the path:
 
-\`\`\`bash
+   ```bash
+   export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+   ```
+
+3. Verify that K3s is running by checking the node status:
+
+   ```bash
+   kubectl get nodes
+   ```
+
+### 2. Create the Kubernetes Namespace
+
+Once K3s is up and running, create a dedicated namespace for **Nextcloud** to ensure isolation of resources:
+
+```bash
 kubectl create namespace nextcloud
-\`\`\`
+```
 
-### 2. Installing MetalLB
+## Nextcloud Deployment
 
-1. First, install the required **MetalLB** CRDs:
+### 1. Install Helm
 
-   \`\`\`bash
+Nextcloud and its components are deployed using **Helm** charts. First, install Helm:
+
+```bash
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+```
+
+### 2. Deploy Nextcloud, PostgreSQL, and Redis
+
+1. Prepare your values file for configuration and secrets to store passwords securely.
+2. Deploy **Nextcloud** using Helm:
+
+   ```bash
+   helm install nextcloud nextcloud/nextcloud --namespace nextcloud -f values.yaml
+   ```
+
+   This command will deploy **Nextcloud**, along with **PostgreSQL** and **Redis**, into the `nextcloud` namespace.
+
+## Ingress Configuration
+
+Once Nextcloud is deployed, you need to configure **Ingress** to expose the application to the network.
+
+1. Apply the Ingress configuration using:
+
+   ```bash
+   kubectl apply -f ingress.yaml --namespace nextcloud
+   ```
+
+2. For environments that do not have cloud-based load balancers, we integrate **MetalLB** for IP address management and load balancing.
+
+### 3. Configure MetalLB
+
+1. Install the MetalLB CRDs:
+
+   ```bash
    kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/crd/bases/metallb.io_ipaddresspools.yaml
    kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/crd/bases/metallb.io_l2advertisements.yaml
-   \`\`\`
+   ```
 
-2. Create the `metallb-system` namespace and apply the MetalLB configuration:
+2. Apply the MetalLB configuration to manage IP addresses:
 
-   \`\`\`bash
-   kubectl create namespace metallb-system
+   ```bash
    kubectl apply -f metallb.yaml
-   \`\`\`
-
-### 3. Deploying Nextcloud
-
-1. Apply the **secrets.yaml** file to create the necessary credentials:
-
-   \`\`\`bash
-   kubectl apply -f secrets.yaml --namespace nextcloud
-   \`\`\`
-
-2. Deploy Nextcloud with PostgreSQL and Redis using Helm:
-
-   \`\`\`bash
-   helm install nextcloud nextcloud/nextcloud --namespace nextcloud -f values.yaml
-   \`\`\`
-
-### 4. Configuring Ingress
-
-Apply the **ingress.yaml** file to expose Nextcloud through a domain name:
-
-\`\`\`bash
-kubectl apply -f ingress.yaml --namespace nextcloud
-\`\`\`
+   ```
 
 ## Monitoring and Troubleshooting
+
+### Monitoring Pods
 
 To monitor the state of the pods and services, use the following commands:
 
 - Check the status of the pods:
 
-  \`\`\`bash
+  ```bash
   kubectl get pods --namespace nextcloud
-  \`\`\`
+  ```
 
 - View logs for any issues:
 
-  \`\`\`bash
+  ```bash
   kubectl logs <pod-name> --namespace nextcloud
-  \`\`\`
+  ```
 
-- Restart the Nextcloud deployment if needed:
+### Restart Nextcloud Deployment
 
-  \`\`\`bash
-  kubectl rollout restart deployment nextcloud --namespace nextcloud
-  \`\`\`
+If there is any issue with the Nextcloud pods, you can restart the deployment:
+
+```bash
+kubectl rollout restart deployment nextcloud --namespace nextcloud
+```
 
 If there are network issues, ensure **MetalLB** is functioning properly by checking the services for an assigned external IP:
 
-\`\`\`bash
+```bash
 kubectl get svc --namespace nextcloud
-\`\`\`
+```
+
+---
+
+This guide provides all the necessary steps to set up a cloud-based file storage system using Nextcloud on Kubernetes. The repository contains the essential configuration files (`values.yaml`, `ingress.yaml`, `secrets.yaml`, `metallb.yaml`) that must be adapted according to your environment.
