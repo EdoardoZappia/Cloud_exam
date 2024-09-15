@@ -11,6 +11,7 @@ This repository contains the configuration files and instructions for deploying 
 - [Cluster Setup](#cluster-setup)
 - [Nextcloud Deployment](#nextcloud-deployment)
 - [Ingress Configuration](#ingress-configuration)
+- [Accessing the Cloud Service](#accessing-the-cloud-service)
 - [Monitoring and Troubleshooting](#monitoring-and-troubleshooting)
 
 ## Introduction
@@ -120,7 +121,7 @@ Once Nextcloud is deployed, you need to configure **Ingress** to expose the appl
 
 2. For environments that do not have cloud-based load balancers, we integrate **MetalLB** for IP address management and load balancing.
 
-### 3. Configure MetalLB
+### 3. Configure MetalLB and L2Advertisement
 
 1. Install the MetalLB CRDs:
 
@@ -129,11 +130,29 @@ Once Nextcloud is deployed, you need to configure **Ingress** to expose the appl
    kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/crd/bases/metallb.io_l2advertisements.yaml
    ```
 
-2. Apply the MetalLB configuration to manage IP addresses:
+2. The L2Advertisement resource is used to enable Layer 2 load balancing, which advertises an IP range on your local network. This allows the service to be reachable from external devices.
+
+3. Apply the MetalLB configuration to manage IP addresses:
 
    ```bash
    kubectl apply -f metallb.yaml
    ```
+
+## Accessing the Cloud Service
+
+Once the deployment is complete, you can access the **Nextcloud** service using your browser:
+
+1. If you're working locally, **Nextcloud** can be accessed via the IP assigned by **MetalLB** or using `localhost` through an SSH tunnel.
+   
+2. Check the external IP of the service:
+
+   ```bash
+   kubectl get svc --namespace nextcloud
+   ```
+
+   You will see the **Nextcloud** service with an assigned IP.
+
+3. In your browser, navigate to `http://localhost` or the external IP to access the cloud service.
 
 ## Monitoring and Troubleshooting
 
