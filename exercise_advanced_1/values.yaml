@@ -1,0 +1,58 @@
+nextcloud:
+  host: nextcloud.local
+  username: admin
+  existingSecret:
+    enabled: true
+    secretName: nextcloud-secrets  # Nome del tuo secret esistente
+    passwordKey: nextcloud-password
+    usernameKey: nextcloud-username
+  dbType: pgsql
+  persistence:
+    enabled: true
+    existingClaim: nextcloud-pvc
+  livenessProbe:
+    httpGet:
+      path: /status.php
+      port: 8080
+    initialDelaySeconds: 60
+    timeoutSeconds: 5
+    failureThreshold: 10
+  readinessProbe:
+    httpGet:
+      path: /status.php
+      port: 8080
+    initialDelaySeconds: 60
+    timeoutSeconds: 5
+    failureThreshold: 10
+
+postgresql:
+  enabled: true
+  postgresqlHost: 10.43.179.137
+  postgresqlUsername: nextcloud
+  existingSecret:
+    enabled: true
+    secretName: nextcloud-secrets  # Nome del tuo secret esistente
+    passwordKey: postgresql-password
+  postgresqlDatabase: nextcloud
+  livenessProbe:
+    tcpSocket:
+      port: 5432
+    initialDelaySeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 6
+  readinessProbe:
+    tcpSocket:
+      port: 5432
+    initialDelaySeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 6
+
+redis:
+  enabled: true
+  host: 10.43.81.234
+  master:
+    persistence:
+      enabled: true
+  replicas:
+    persistence:
+      enabled: true
