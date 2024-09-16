@@ -188,4 +188,4 @@ kubectl get svc --namespace nextcloud
 
 ---
 
-This guide provides all the necessary steps to set up a cloud-based file storage system using Nextcloud on Kubernetes. The repository contains the essential configuration files (`values.yaml`, `ingress.yaml`, `secrets.yaml`, `metallb.yaml`, `persistent-volume.yaml` containing als pvc) that must be adapted according to your environment.
+This guide provides all the necessary steps to set up a cloud-based file storage system using Nextcloud on Kubernetes. The repository contains the essential configuration files (`values.yaml`, `ingress.yaml`, `secrets.yaml`, `metallb.yaml`, `persistent-volume.yaml` containing also pvc) that must be adapted according to your environment.
