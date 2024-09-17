@@ -1,18 +1,18 @@
-# **Cloud Storage Deployment on Kubernetes**
+# **Deploying a Cloud Storage System on Kubernetes**
 
-This directory contains the solution for the **Cloud Advanced** assignment, which involves deploying a cloud storage solution on a single-node `Kubernetes` cluster. The deployment includes a [Nextcloud](https://nextcloud.com/) instance integrated with `PostgreSQL` for data management and `Redis` for caching.
+This guide provides the solution for the first **Cloud Advanced** assignment, outlining the steps to deploy a cloud-based file storage system using `Kubernetes` on a single-node cluster. The deployment includes a [Nextcloud](https://nextcloud.com/) instance, along with a `PostgreSQL` database and `Redis` caching service.
 
-## **Directory Overview**
+## **Directory Structure**
 
-The folder is structured as follows:
+The project directory is organized as follows:
 
 ```bash
 .
-├── README.md                   # This file
-├── deploy_nextcloud.sh          # Script to deploy Nextcloud
-├── initial_setup.sh             # Script to initialize the Kubernetes cluster
-└── nextcloud                    # Directory for Nextcloud manifests and configuration
-    ├── metallb/                 # Manifests for MetalLB configuration
+├── README.md                   # This guide
+├── deploy_nextcloud.sh          # Script for deploying Nextcloud
+├── initial_setup.sh             # Script to configure the Kubernetes cluster
+└── nextcloud                    # Directory containing deployment manifests for Nextcloud
+    ├── metallb/                 # MetalLB configuration files
     │   ├── configmap.yaml
     │   ├── ipaddresspool.yaml
     │   └── l2advertisement.yaml
@@ -20,68 +20,97 @@ The folder is structured as follows:
     │   ├── nextcloud-postgresql-secrets.yaml
     │   ├── nextcloud-redis-secrets.yaml
     │   └── nextcloud-secrets.yaml
-    ├── values.yaml              # Helm values for customized Nextcloud setup
-    └── volumes/                 # Persistent Volume configurations
+    ├── values.yaml              # Helm values file for Nextcloud deployment
+    └── volumes/                 # Persistent Volume configuration files
         ├── nextcloud-postgresql-pv.yaml
         ├── nextcloud-postgresql-pvc.yaml
         ├── nextcloud-pv.yaml
         └── nextcloud-pvc.yaml
 ```
 
-## **Deployment Guide**
+## **Deployment Steps**
 
-### **1. Setting Up the Virtual Machine**
+### **1. Virtual Machine Setup**
 
-Begin by creating a virtual machine (VM) that will host the Kubernetes cluster. Follow these steps:
+Start by setting up a virtual machine (VM) to host the Kubernetes cluster.
 
-1. **VM Installation**:
-   - Download and install a suitable OS image such as Fedora 39.
-   - For virtualization, tools like `UTM` (on macOS) or `VirtualBox` (on other systems) can be used.
-   - Configure the VM with a minimum of 2 CPUs and 2GB of RAM.
-   - Ensure SSH access is enabled for root to simplify remote management.
+1. **Create a VM**:
+   - Download the Fedora 39 server image or another preferred operating system.
+   - Use a tool such as `UTM` (for macOS) or `VirtualBox` to create the VM.
+   - Allocate at least 2 CPUs and 2GB of RAM to the VM.
+   - Enable SSH access for the root user.
 
-2. **Kubernetes Cluster Setup**:
-   - Execute the `initial_setup.sh` script on the VM to set up Kubernetes and the necessary components.
-   - This script handles network configuration, ingress controller setup, and MetalLB for load balancing.
+2. **Cluster Initialization**:
+   - Copy the `initial_setup.sh` script to the VM:
+
+   ```bash
+   scp initial_setup.sh root@<VM_IP>:/root
+   ```
+
+   - Log in to the VM via SSH:
+
+   ```bash
+   ssh root@<VM_IP>
+   ```
+
+   - Run the `initial_setup.sh` script to set up Kubernetes and required components:
+
+   ```bash
+   ./initial_setup.sh
+   ```
+
+This script will install Kubernetes, configure the network, and set up the ingress controllers along with MetalLB for load balancing.
 
 ### **2. Deploying Nextcloud**
 
-Once the Kubernetes cluster is operational, you can deploy the Nextcloud instance using Helm and the provided configuration.
+Once the Kubernetes cluster is ready, proceed with deploying the Nextcloud instance.
 
-1. **Setup**:
-   - Copy the `nextcloud` directory into the `/root/home` directory on the VM. If you prefer a different location, modify the paths in the scripts accordingly.
+1. **Prepare the Environment**:
+   - Copy the `nextcloud` directory to the VM:
 
-2. **Deploy Nextcloud**:
-   - Run the `deploy_nextcloud.sh` script. This will install Nextcloud via Helm using the settings defined in the `values.yaml` file.
-   - The script also configures persistent volumes, secrets, and MetalLB to assign an external IP to the Nextcloud service.
+   ```bash
+   scp -r nextcloud root@<VM_IP>:/root/home
+   ```
 
-3. **Confirm Deployment**:
-   - Check that all services are running correctly by executing:
+   - Ensure that the directory paths in the deployment scripts match the location of the copied files.
+
+2. **Run the Deployment Script**:
+   - Execute the `deploy_nextcloud.sh` script to deploy Nextcloud using Helm and custom values from `values.yaml`:
+
+   ```bash
+   ./deploy_nextcloud.sh
+   ```
+
+   This script will configure persistent volumes, secrets, and assign an external IP address using MetalLB.
+
+3. **Check Deployment Status**:
+   - Verify that the services are running by executing:
 
    ```bash
    kubectl get svc -n nextcloud
    ```
 
-   You should see a LoadBalancer service with an external IP provided by MetalLB.
+   Ensure that a LoadBalancer service with an external IP is visible.
 
 ### **3. Accessing Nextcloud**
 
-You can access the Nextcloud web interface from your host machine by setting up port forwarding.
+To access the Nextcloud interface from your local machine, you need to forward the ports.
 
-1. **Port Forward Setup**:
-   - Use `tmux` to manage the port forwarding on the VM:
+1. **Port Forwarding on VM**:
+   - Set up port forwarding using `tmux` to allow the Nextcloud service to be accessible:
 
    ```bash
    tmux new-session -d -s nextcloud-portforward "kubectl port-forward service/nextcloud-advanced 8080:8080 --address 0.0.0.0 -n nextcloud"
    ```
 
-2. **Local Forwarding**:
-   - On your host machine, use SSH to forward the VM's port to your local system:
+2. **Accessing Nextcloud from the Host Machine**:
+   - On your host machine, forward the VM's port to your local machine using SSH:
 
    ```bash
    ssh user@<VM_IP> -L 8080:localhost:8080
    ```
 
-3. **Open Nextcloud**:
-   - Open a browser and go to `http://localhost:8080`.
-   - The Nextcloud login page will be displayed, allowing you to create an account and begin using the service.
+   - Open a browser and navigate to `http://localhost:8080`.
+
+3. **Nextcloud Login**:
+   - The Nextcloud login page should load in your browser, where you can create an admin account and start using the platform.
