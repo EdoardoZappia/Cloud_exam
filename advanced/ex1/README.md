@@ -59,16 +59,37 @@ Start by setting up a virtual machine (VM) to host the Kubernetes cluster.
    ./initial_setup.sh
    ```
 
-This script will install Kubernetes, configure the network, and set up the ingress controllers along with MetalLB for load balancing.
+This script will install `Kubernetes`, `Helm` and other necessary components on the VM and set up the `Kubernetes` single-node cluster and all the required environment.
+
+You can check the status of the cluster either with
+
+``` bash
+
+kubectl get nodes
+
+```
+
+You should see the single node of the cluster with the status `Ready`.
+
+You can also check the status of the pods running in the cluster by running the following command:
+
+``` bash
+
+kubectl get pods --all-namespaces -o wide
+
+```
 
 ### **2. Deploying Nextcloud**
 
 Once the Kubernetes cluster is ready, proceed with deploying the Nextcloud instance.
 
 1. **Prepare the Environment**:
-   - Copy the `nextcloud` directory to the VM:
+   - Copy the `nextcloud` directory  and the `deploy_nextcloud.sh` script to the VM:
 
    ```bash
+
+   scp deploy_nextcloud.sh root@<VM_IP>:/root/home
+
    scp -r nextcloud root@<VM_IP>:/root/home
    ```
 
@@ -113,4 +134,4 @@ To access the Nextcloud interface from your local machine, you need to forward t
    - Open a browser and navigate to `http://localhost:8080`.
 
 3. **Nextcloud Login**:
-   - The Nextcloud login page should load in your browser, where you can create an admin account and start using the platform.
+   - The Nextcloud login page should load in your browser, where you can create a new account and start using the platform.
