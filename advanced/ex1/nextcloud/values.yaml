@@ -1,0 +1,138 @@
+# Image settings
+image:
+  repository: nextcloud
+  flavor: fpm
+  tag:
+  pullPolicy: IfNotPresent
+
+# Number of replicas
+replicaCount: 1
+
+# Nextcloud settings
+nextcloud:
+  host: nextcloudk8s.local
+  existingSecret:
+    enabled: true
+    secretName: nextcloud-secrets
+    usernameKey: username
+    passwordKey: password
+    tokenKey: nextcloud-token
+  datadir: /var/www/html/data
+  persistence:
+    enabled: true
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    existingClaim: nextcloud-pvc
+  strategy:
+    type: Recreate
+
+# Nginx settings
+nginx:
+  enabled: true
+  image:
+    repository: nginx
+    tag: 1.27.0-alpine
+    pullPolicy: IfNotPresent
+  containerPort: 80
+
+# Database settings for PostgreSQL
+internalDatabase:
+  enabled: false
+  
+externalDatabase:
+  enabled: true
+  type: postgresql
+  host: localhost:5432
+  existingSecret:
+    enabled: true
+    secretName: nextcloud-postgresql-secrets
+    usernameKey: postgresql-username
+    passwordKey: postgresql-password
+    databaseKey: database
+    rootPasswordKey: postgresql-root-password
+    hostKey: postgresql-host
+  
+postgresql:
+  enabled: true
+  image:
+    tag: 16.0
+    pullPolicy: IfNotPresent
+  global:
+    postgresql:
+      auth:
+        existingSecret: nextcloud-postgresql-secrets
+        secretKeys:
+          usenameKey: postgresql-username
+          userPasswordKey: postgresql-password
+          databaseKey: database
+          adminPasswordKey: postgresql-root-password
+          hostKey: postgresql-host
+  primary:
+    persistence:
+      enabled: true
+      accessMode: ReadWriteOnce
+      size: 5Gi
+      existingClaim: nextcloud-postgresql-pvc
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 5Gi
+  existingClaim: nextcloud-pvc
+          
+# Redis settings
+redis:
+  enabled: true
+  auth:
+    enable: true
+    existingSecret: nextcloud-redis-secrets
+    existingSecretPasswordKey: redis-password
+  architecture: standalone
+  master:
+    enabled: true
+    persistence:
+      enabled: false
+    replicas: 0
+  replica:
+    enabled: false
+    persistence:
+      enabled: false
+    replicas: 0
+
+# Cronjob sidecar container settings
+cronjob:
+  enabled: true
+  resources: {}
+
+# Horizontal Pod Autoscaler settings
+hpa:
+  enabled: true
+  cputhreshold: 60
+  minPods: 1
+  maxPods: 10
+
+# Load Balancer settings (MetalLB)
+service:
+  type: LoadBalancer
+  port: 8080
+  externalTrafficPolicy: Local
+  annotations:
+    metallb.universe.tf/address-pool: ip-address-pool
+
+# Probes settings (default values)
+startupProbe:
+  enabled: false
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
