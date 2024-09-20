@@ -19,7 +19,6 @@ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/confi
 # Wait for the controller to be available
 kubectl wait --for=condition=available --timeout=600s deployment/controller -n metallb-system
 # Apply the configuration for the Metallb Load Balancer
-kubectl apply -f configmap.yaml
 kubectl apply -f ipaddresspool.yaml
 kubectl apply -f l2advertisement.yaml   # to advertise the IP address in the local network
 
