@@ -5,5 +5,5 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
-  - 192.168.64.200-192.168.64.250
+  - ###.###.##.###-###.###.##.###  # Change this to the range of IP addresses you want to use
   autoAssign: true

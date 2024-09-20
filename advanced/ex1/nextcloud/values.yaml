@@ -79,7 +79,7 @@ persistence:
   accessMode: ReadWriteOnce
   size: 5Gi
   existingClaim: nextcloud-pvc
-          
+
 # Redis settings
 redis:
   enabled: true
