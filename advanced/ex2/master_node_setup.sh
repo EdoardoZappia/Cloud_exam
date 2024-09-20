@@ -1,11 +1,9 @@
 #!/bin/bash
 
-# This script is intended to be run on the master node of the cluster to prepare its environment
-
-# Initialize kubernetes (save the output to a log file)
+# Initialize kubernetes
 kubeadm init --pod-network-cidr=10.17.0.0/16 --service-cidr=10.96.0.0/12 > /root/kubeinit.log
 
-# Create a new file with the join command
+# Create a new file with the join command (to connect the worker nodes)
 cat /root/kubeinit.log | grep -A 1 "kubeadm join" > /root/join_nodes.sh
 chmod +777 /root/join_nodes.sh
 
@@ -18,9 +16,8 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 sudo cp /etc/kubernetes/admin.conf /home/admin.conf
 sudo chmod 666 /home/admin.conf
 
-# Remove taints from the master node to allow pods to be scheduled on it
-# (Change the name of the node to the name of the master node in your cluster)
-kubectl taint nodes 192.168.64.23 node-role.kubernetes.io/control-plane-
+# Remove taints from the master node
+kubectl taint nodes ###.###.##.## node-role.kubernetes.io/control-plane-
 
 # Disable the firewall
 systemctl stop firewalld

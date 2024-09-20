@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# This script is intended to be run on both nodes of the cluster (both the virtual machines) to prepare the environment
-# It will install the necessary packages and configure the system
-
 # Load modules for container runtime
 modprobe overlay
 modprobe br_netfilter

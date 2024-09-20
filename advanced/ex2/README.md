@@ -4,43 +4,42 @@ This directory contains the solution for the second task of the **Cloud Advanced
 
 ## Directory Overview
 
-The structure of this folder is organized as follows:
+This is the list of the files with their functions, I suggest to read this before jumping in the deployment:
 
-```bash
-.
-├── README.md                 # This guide
-├── Dockerfiles_MPI_OSU        # Dockerfiles for building the OSU benchmark containers
-│   ├── Dockerfile
-│   ├── openmpi-builder.Dockerfile
-│   ├── openmpi.Dockerfile
-│   └── osu-code-provider.Dockerfile
-├── OSU_benchmarks             # Scripts and manifests for the OSU benchmark
-│   ├── Results                # Directory for storing benchmark results
-│   │   └── Results.txt
-│   ├── latency-one-node.yaml
-│   ├── latency-two-nodes.yaml
-│   ├── latency_one_node.sh
-│   ├── latency_two_nodes.sh
-│   ├── plot_results.ipynb     # Jupyter notebook for plotting benchmark results
-│   ├── scatter-one-node.yaml
-│   ├── scatter-two-nodes.yaml
-│   ├── scatter_one_node.sh
-│   └── scatter_two_nodes.sh
-├── common_initial_setup.sh    # Initial setup script for master and worker nodes
-├── install_mpi_flannel.sh     # MPI and Flannel installation script for the master node
-├── master_node_setup.sh       # Setup script for configuring the master node
-└── worker_node_setup.sh       # Setup script for configuring the worker node
-```
+`common_initial_setup.sh`: loads modules, disables problematic stuff, installs Kubernetes, installs utils, installs CRI-o, Podman, Docker and Helm, starts the services, installs CNI.
+
+`master_node_setup.sh`: initializes Kubernetes, disables problematic stuff, enables access.
+
+`worker_node_setup.sh`: joins the node to the cluster.
+
+`install_mpi_flannel.sh`: installs MPI operator and Flannel.
+
+`Docketfile.txt`, `openmpi-builder.Dockerfile`, `openmpi.Dockerfile`, `osu-code-provider.Dockerfile`:  work together to build and provide an environment for compiling, running, and benchmarking applications using OpenMPI.
+
+`latency_one_node.sh`: creates the necessary namespace (osu-benchmark) and output directory (Results), applies the `latency-one-node.yaml` MPI job to the cluster, waits for the benchmark pod to complete, retrieves the results, and writes them to `Results.txt` and cleans up the resources once the job is finished.
+
+`latency_one_node.yaml`: defines an MPIJob that runs the OSU latency benchmark using MPI processes on a Kubernetes cluster, specifies the MPI launcher and worker pods, along with their configuration for running the benchmark, runs the osu_latency benchmark to measure communication latency between two MPI processes.
+
+`latency_two_node.sh`, `latency_two_node.yaml`: do the same but on two nodes.
+
+`scatter_one_node.sh`, `scatter_one_node.yaml`, `scatter_two_node.sh`, `scatter_two_node.yaml`: do the same but they run the osu_scatter benchmark.
+
+`plot_results.ipynb`: plots the results.
 
 ## Setup Instructions
+
+Remember to insert the IP address in `master_node_setup.sh`, `worker_node_setup.sh`
 
 To deploy and execute the OSU benchmark, two virtual machines (VMs) must be created, each running `Kubernetes` with the necessary components, forming a two-node `Kubernetes` cluster.
 
 ### Virtual Machine Setup
 
-Start by creating two new VMs using the Fedora 39 image. This example uses `UTM` for virtualization on a `macOS` host, but other tools such as `VirtualBox` can be used based on your environment. Ensure that each VM is provisioned with at least 2 CPUs and 2 GB of RAM.
+   - Download the Fedora 39 server image or another preferred operating system.
+   - Use a tool such as `UTM` (for macOS) or `VirtualBox` to create the VM.
+   - Allocate at least 2 CPUs and 2GB of RAM to the VM.
+   - Enable SSH access for the root user.
 
-During VM creation, enable `SSH` root login to facilitate easier access from the host machine. To connect to the VM via `SSH`, use the following command:
+To connect to the VM via `SSH`, use the following command:
 
 ```bash
 ssh root@<VM_IP>

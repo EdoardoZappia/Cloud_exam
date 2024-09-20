@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# This script is used to estimate the latency between two nodes by
-# running the OSU latency benchmark on two nodes, by placing one worker pod on each node.
-
 # Create the osu-benchmark namespace if it does not exist
 if [ -z "$(kubectl get ns osu-benchmark)" ]; then
     kubectl create ns osu-benchmark

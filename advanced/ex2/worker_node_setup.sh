@@ -1,8 +1,6 @@
 #!/bin/bash
 
-# This script is intended to be run on the worker nodes of the cluster to prepare their environment
-
-export master_ip=192.168.64.23 # Change this to the IP of the master node
+export master_ip=###.###.##.## # Change this to the IP of the master node
 
 # Copy the credentials from the master node
 scp -o stricthostkeychecking=no root@$master_ip:/home/admin.conf /home/admin.conf
