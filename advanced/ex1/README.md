@@ -1,32 +1,6 @@
 # **Deploying a Cloud Storage System on Kubernetes**
 
-This guide provides the solution for the first **Cloud Advanced** assignment, outlining the steps to deploy a cloud-based file storage system using `Kubernetes` on a single-node cluster. The deployment includes a [Nextcloud](https://nextcloud.com/) instance, along with a `PostgreSQL` database and `Redis` caching service.
-
-## **Directory Structure**
-
-The project directory is organized as follows:
-
-```bash
-.
-├── README.md                   # This guide
-├── deploy_nextcloud.sh          # Script for deploying Nextcloud
-├── initial_setup.sh             # Script to configure the Kubernetes cluster
-└── nextcloud                    # Directory containing deployment manifests for Nextcloud
-    ├── metallb/                 # MetalLB configuration files
-    │   ├── configmap.yaml
-    │   ├── ipaddresspool.yaml
-    │   └── l2advertisement.yaml
-    ├── secrets/                 # Secrets for Nextcloud, PostgreSQL, and Redis
-    │   ├── nextcloud-postgresql-secrets.yaml
-    │   ├── nextcloud-redis-secrets.yaml
-    │   └── nextcloud-secrets.yaml
-    ├── values.yaml              # Helm values file for Nextcloud deployment
-    └── volumes/                 # Persistent Volume configuration files
-        ├── nextcloud-postgresql-pv.yaml
-        ├── nextcloud-postgresql-pvc.yaml
-        ├── nextcloud-pv.yaml
-        └── nextcloud-pvc.yaml
-```
+This guide provides the solution for the first **Cloud Advanced** assignment, outlining the steps to deploy a cloud-based file storage system using `Kubernetes` on a single-node cluster.
 
 ## **Deployment Steps**
 
