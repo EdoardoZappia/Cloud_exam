@@ -2,9 +2,21 @@
 
 This guide provides the solution for the first **Cloud Advanced** assignment, outlining the steps to deploy a cloud-based file storage system using `Kubernetes` on a single-node cluster.
 
-`initial_setup.sh`: loads modules, disables problematic stuff, installs Kubernetes, installs utils, install Helm and tmux
+This is the list of the files with what they do, I suggest to read this before jumping in the deployment:
 
-`deploy_nextcloud.sh`: 
+`initial_setup.sh`: loads modules, disables problematic stuff, installs Kubernetes, installs utils, initialize the cluster, install Helm and tmux.
+
+`deploy_nextcloud.sh`: applies the Local Path Provisioner and the PVs and PVCs, install MetalLB and applies the configuration, applies the secrets and installs the Nextcloud Helm chart.
+
+`values.yaml`: defines the settings of: Nextcloud, Nginx, PostgreSQL, Redis and other settings.
+
+`ipaddresspool.yaml`: defines the address pool for MetalLB.
+
+`l2advertisement.yaml`: creates the object l2advertisement to advertise the IP addresses of ip-address-pool.
+
+`nextcloud-postgresql-secrets.yaml`, `nextcloud-redis-secrets.yaml`, `nextcloud-secrets.yaml`: create the objects Secret.
+
+`nextcloud-postgresql-pv.yaml`, `nextcloud-postgresql-pvc.yaml`, `nexctloud-pv.yaml`, `nextcloud-pvc.yaml`: create the objects PV and PVC.
 
 ## **Deployment Steps**
 
