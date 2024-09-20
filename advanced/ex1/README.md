@@ -2,7 +2,7 @@
 
 This guide provides the solution for the first **Cloud Advanced** assignment, outlining the steps to deploy a cloud-based file storage system using `Kubernetes` on a single-node cluster.
 
-This is the list of the files with what they do, I suggest to read this before jumping in the deployment:
+This is the list of the files with their functions, I suggest to read this before jumping in the deployment:
 
 `initial_setup.sh`: loads modules, disables problematic stuff, installs Kubernetes, installs utils, initialize the cluster, install Helm and tmux.
 
