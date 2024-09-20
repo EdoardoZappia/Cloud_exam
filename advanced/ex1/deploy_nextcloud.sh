@@ -6,6 +6,7 @@ kubectl create namespace nextcloud
 
 # Define the PV and the PVC
 cd volumes # This directory contains the yaml files for the PV and PVC
+# Install the Local Path Provisioner for the local storage management
 kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
 kubectl apply -f nextcloud-pv.yaml -n nextcloud
 kubectl apply -f nextcloud-pvc.yaml -n nextcloud
@@ -20,7 +21,7 @@ kubectl wait --for=condition=available --timeout=600s deployment/controller -n m
 # Apply the configuration for the Metallb Load Balancer
 kubectl apply -f configmap.yaml
 kubectl apply -f ipaddresspool.yaml
-kubectl apply -f l2advertisement.yaml
+kubectl apply -f l2advertisement.yaml   # to advertise the IP address in the local network
 
 # Create the secrets
 cd ../secrets # This directory contains the yaml files for the secrets
