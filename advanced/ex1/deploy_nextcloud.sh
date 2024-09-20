@@ -1,14 +1,11 @@
 #!/bin/bash
 
-# Enter the directory where the Nextcloud files are located
 cd nextcloud
 
-# Create the nextcloud namespace
 kubectl create namespace nextcloud
 
-# Define the persistent volumes and the persistent volume claims
-# to store the data in case of a pod failure
-cd volumes # This directory contains the yaml files for the persistent volumes and the persistent volume claims
+# Define the PV and the PVC
+cd volumes # This directory contains the yaml files for the PV and PVC
 kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
 kubectl apply -f nextcloud-pv.yaml -n nextcloud
 kubectl apply -f nextcloud-pvc.yaml -n nextcloud
