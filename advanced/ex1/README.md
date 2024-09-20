@@ -2,7 +2,13 @@
 
 This guide provides the solution for the first **Cloud Advanced** assignment, outlining the steps to deploy a cloud-based file storage system using `Kubernetes` on a single-node cluster.
 
+`initial_setup.sh`: loads modules, disables problematic stuff, installs Kubernetes, installs utils, install Helm and tmux
+
+`deploy_nextcloud.sh`: 
+
 ## **Deployment Steps**
+
+Remember to insert the correct IP addresses in `ipaddresspool.yaml`, in `nextcloud-postgresql.yaml` and in `nextcloud-pv.yaml`.
 
 ### **1. Virtual Machine Setup**
 
