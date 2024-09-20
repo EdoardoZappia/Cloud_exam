@@ -5,7 +5,7 @@ image:
   tag:
   pullPolicy: IfNotPresent
 
-# Number of replicas
+# Nextcloud pod number of replicas
 replicaCount: 1
 
 # Nextcloud settings
@@ -24,7 +24,7 @@ nextcloud:
     size: 5Gi
     existingClaim: nextcloud-pvc
   strategy:
-    type: Recreate
+    type: Recreate # existing pods are killed before new ones are created
 
 # Nginx settings
 nginx:
