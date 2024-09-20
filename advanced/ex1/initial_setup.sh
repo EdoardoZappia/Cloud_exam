@@ -20,7 +20,7 @@ EOF
 # Load kernel parameters at runtime
 sysctl --system
 
-# disable zram
+# disable zram and swap for k8s (they could be a problem for the pod resource menagement)
 touch /etc/systemd/zram-generator.conf
 swapoff -a
 
@@ -41,9 +41,9 @@ EOF
 
 # Some utils
 dnf install iproute-tc wget vim bash-completion bat -y
-# CRI-o
+# CRI-o (container runtime)
 dnf install crio -y
-# real kube
+# Kubernetes components
 dnf install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 
 # Enable and start the services
@@ -51,7 +51,8 @@ sed -i 's/10.85.0.0\/16/10.17.0.0\/16/' /etc/cni/net.d/100-crio-bridge.conflist
 systemctl enable --now crio
 systemctl enable --now kubelet
 
-kubeadm init --pod-network-cidr=10.17.0.0/16
+# Initialize the cluster (cidr is the pod network)
+kubeadm init --pod-network-cidr=10.17.0.0/16  
 
 # Copy the kubeconfig
 mkdir -p $HOME/.kube
@@ -60,7 +61,7 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 alias k=kubectl
 
-# Install k9s
+# Install k9s (it simplifies the debugging)
 cd /tmp
 wget https://github.com/derailed/k9s/releases/download/v0.28.2/k9s_Linux_amd64.tar.gz
 tar -xvf k9s_Linux_amd64.tar.gz
@@ -78,7 +79,7 @@ EOF
 # Install Helm
 dnf install -y helm
 
-# Remove the taint
+# Remove the taint (to allow the pods to run on the master node)
 kubectl taint nodes --all  node-role.kubernetes.io/control-plane-
 
 # Create directories for the persistent volumes
@@ -86,5 +87,5 @@ mkdir -p /home/volumes
 mkdir -p /home/volumes/nextcloud
 mkdir -p /home/volumes/postgresql
 
-# Install tmux to be able to later set up a port forward to connect to the service from the host machine
+# Install tmux (to do the port forwarding to access the service from the host machine web browser)
 dnf install -y tmux
