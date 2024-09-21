@@ -43,8 +43,8 @@ EOF
 dnf install iproute-tc wget vim bash-completion bat -y
 # Real kube
 dnf install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
-# Install CRI-o, podman, docker and helm
-dnf install -y crio podman docker helm
+# Install CRI-o, docker and helm
+dnf install -y crio docker helm
 
 # Enable and start the services
 sed -i 's/10.85.0.0\/16/10.17.0.0\/16/' /etc/cni/net.d/100-crio-bridge.conflist

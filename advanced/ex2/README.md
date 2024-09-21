@@ -6,7 +6,7 @@ This directory contains the solution for the second task of the **Cloud Advanced
 
 This is the list of the files with their functions, I suggest to read this before jumping in the deployment:
 
-`common_initial_setup.sh`: loads modules, disables problematic stuff, installs Kubernetes, installs utils, installs CRI-o, Podman, Docker and Helm, starts the services, installs CNI.
+`common_initial_setup.sh`: loads modules, disables problematic stuff, installs Kubernetes, installs utils, installs CRI-o, Docker and Helm, starts the services, installs CNI.
 
 `master_node_setup.sh`: initializes Kubernetes, disables problematic stuff, enables access.
 
