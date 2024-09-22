@@ -6,7 +6,7 @@ This is the list of the files with their functions, I suggest to read this befor
 
 `initial_setup.sh`: loads modules, disables problematic stuff, installs Kubernetes, installs utils, initialize the cluster, install Helm and tmux.
 
-`deploy_nextcloud.sh`: applies the Local Path Provisioner and the PVs and PVCs, install MetalLB and applies the configuration, applies the secrets and installs the Nextcloud Helm chart.
+`deploy_nextcloud.sh`: applies the PVs and PVCs, install MetalLB and applies the configuration, applies the secrets and installs the Nextcloud Helm chart.
 
 `values.yaml`: defines the settings of: Nextcloud, Nginx, PostgreSQL, Redis and other settings.
 
